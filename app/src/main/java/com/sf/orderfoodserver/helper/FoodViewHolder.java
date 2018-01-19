@@ -10,22 +10,22 @@ import com.sf.orderfoodserver.R;
 import com.sf.orderfoodserver.common.Common;
 
 /**
- * Created by mesutgenc on 8.01.2018.
+ * Created by mesutgenc on 9.01.2018.
  */
 
-public class MenuViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
+public class FoodViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
         View.OnCreateContextMenuListener {
 
-    public TextView txtMenuName;
-    public ImageView imgViewMenu;
+    public TextView food_name;
+    public ImageView food_image;
 
     ItemClickListener itemClickListener;
 
-    public MenuViewHolder(View itemView) {
+    public FoodViewHolder(View itemView) {
         super(itemView);
 
-        txtMenuName = (TextView) itemView.findViewById(R.id.menu_name);
-        imgViewMenu = (ImageView) itemView.findViewById(R.id.menu_image);
+        food_name = (TextView) itemView.findViewById(R.id.food_name);
+        food_image = (ImageView) itemView.findViewById(R.id.food_image);
 
         itemView.setOnCreateContextMenuListener(this);
         itemView.setOnClickListener(this);
