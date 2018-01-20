@@ -43,6 +43,8 @@ dependencies {
     implementation 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
     // material searchbar
     implementation 'com.github.mancj:MaterialSearchBar:0.7.5'
+    // material spinner
+    implementation 'com.jaredrummler:material-spinner:1.1.0'
 }
 
 

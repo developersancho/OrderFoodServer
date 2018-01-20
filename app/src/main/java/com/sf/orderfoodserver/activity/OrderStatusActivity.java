@@ -1,9 +1,12 @@
 package com.sf.orderfoodserver.activity;
 
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -11,6 +14,7 @@ import android.widget.Toast;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.sf.orderfoodserver.R;
 import com.sf.orderfoodserver.common.Common;
 import com.sf.orderfoodserver.helper.ItemClickListener;
@@ -26,6 +30,8 @@ public class OrderStatusActivity extends AppCompatActivity {
     DatabaseReference requests;
 
     FirebaseRecyclerAdapter<Request, OrderViewHolder> adapter;
+
+    MaterialSpinner spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,9 +80,9 @@ public class OrderStatusActivity extends AppCompatActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
 
-        if (item.getIntent().equals(Common.UPDATE)) {
+        if (item.getTitle().equals(Common.UPDATE)) {
             showUpdateDialog(adapter.getRef(item.getOrder()).getKey(), adapter.getItem(item.getOrder()));
-        } else if (item.getIntent().equals(Common.DELETE)) {
+        } else if (item.getTitle().equals(Common.DELETE)) {
             deleteOrder(adapter.getRef(item.getOrder()).getKey());
         }
 
@@ -84,10 +90,42 @@ public class OrderStatusActivity extends AppCompatActivity {
     }
 
     private void deleteOrder(String key) {
+        requests.child(key).removeValue();
+    }
+
+    private void showUpdateDialog(String key, final Request item) {
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(OrderStatusActivity.this);
+        alertDialog.setTitle("Update Order");
+        alertDialog.setMessage("Please choose status");
+
+        LayoutInflater layoutInflater = this.getLayoutInflater();
+        View view = layoutInflater.inflate(R.layout.update_order_layout, null);
+        spinner = (MaterialSpinner) view.findViewById(R.id.statusSpinner);
+        spinner.setItems("Placed", "On My Way", "Shipped");
+
+        alertDialog.setView(view);
+
+        final String localKey = key;
+        alertDialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                item.setStatus(String.valueOf(spinner.getSelectedIndex()));
+                requests.child(localKey).setValue(item);
+            }
+        });
+
+        alertDialog.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        alertDialog.show();
 
     }
 
-    private void showUpdateDialog(String key, Request item) {
 
-    }
 }
