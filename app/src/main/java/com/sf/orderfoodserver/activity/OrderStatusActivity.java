@@ -1,6 +1,7 @@
 package com.sf.orderfoodserver.activity;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -58,7 +59,7 @@ public class OrderStatusActivity extends AppCompatActivity {
                 requests) {
 
             @Override
-            protected void populateViewHolder(OrderViewHolder viewHolder, Request model, int position) {
+            protected void populateViewHolder(OrderViewHolder viewHolder, final Request model, int position) {
                 viewHolder.order_id.setText(adapter.getRef(position).getKey());
                 viewHolder.order_status.setText(Common.convertCodeToStatus(model.getStatus()));
                 viewHolder.order_phone.setText(model.getPhone());
@@ -68,7 +69,10 @@ public class OrderStatusActivity extends AppCompatActivity {
                 viewHolder.setItemClickListener(new ItemClickListener() {
                     @Override
                     public void onClick(View view, int position, boolean isLongClick) {
-                        Toast.makeText(OrderStatusActivity.this, "" + clickItem.getName() + "-" + clickItem.getPhone(), Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(OrderStatusActivity.this, "" + clickItem.getName() + "-" + clickItem.getPhone(), Toast.LENGTH_SHORT).show();
+                        Intent trackingOrder = new Intent(OrderStatusActivity.this, TrackingOrderActivity.class);
+                        Common.currentRequest = model;
+                        startActivity(trackingOrder);
                     }
                 });
             }
