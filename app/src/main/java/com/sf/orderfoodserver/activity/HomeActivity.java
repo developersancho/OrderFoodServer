@@ -28,8 +28,12 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -40,6 +44,7 @@ import com.sf.orderfoodserver.common.Common;
 import com.sf.orderfoodserver.helper.ItemClickListener;
 import com.sf.orderfoodserver.helper.MenuViewHolder;
 import com.sf.orderfoodserver.model.Category;
+import com.sf.orderfoodserver.service.ListenOrderService;
 import com.squareup.picasso.Picasso;
 
 import java.util.UUID;
@@ -105,6 +110,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         layoutManager = new LinearLayoutManager(this);
         recycler_menu.setLayoutManager(layoutManager);
         loadMenu();
+
+        // register service
+        Intent service = new Intent(HomeActivity.this, ListenOrderService.class);
+        startService(service);
     }
 
     private void showDialog() {
@@ -316,6 +325,22 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void deleteCategory(String key) {
+        // first , we need get all food in category
+        DatabaseReference foods = database.getReference("Foods");
+        Query foodInCategory = foods.orderByChild("menuId").equalTo(key);
+        foodInCategory.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+                    postSnapShot.getRef().removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         category.child(key).removeValue();
         Toast.makeText(this, "Item deleted", Toast.LENGTH_SHORT).show();
     }
