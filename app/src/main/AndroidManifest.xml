@@ -46,7 +46,9 @@
         <service
             android:name=".service.ListenOrderService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".activity.OrderDetailActivity"></activity>
     </application>
 
 </manifest>

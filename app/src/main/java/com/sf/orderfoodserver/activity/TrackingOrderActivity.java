@@ -125,6 +125,8 @@ public class TrackingOrderActivity extends FragmentActivity implements OnMapRead
         } else {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             if (mLastLocation != null) {
+
+                mMap.clear();
                 final double latitude = mLastLocation.getLatitude();
                 final double longitude = mLastLocation.getLongitude();
 
