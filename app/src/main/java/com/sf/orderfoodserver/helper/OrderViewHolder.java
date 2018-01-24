@@ -13,7 +13,6 @@ import com.sf.orderfoodserver.common.Common;
  */
 
 public class OrderViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
-        View.OnLongClickListener,
         View.OnCreateContextMenuListener {
 
     public TextView order_id, order_status, order_phone, order_address;
@@ -29,7 +28,6 @@ public class OrderViewHolder extends RecyclerView.ViewHolder implements View.OnC
         order_address = (TextView) itemView.findViewById(R.id.order_address);
 
         itemView.setOnClickListener(this);
-        itemView.setOnLongClickListener(this);
         itemView.setOnCreateContextMenuListener(this);
     }
 
@@ -50,9 +48,4 @@ public class OrderViewHolder extends RecyclerView.ViewHolder implements View.OnC
         menu.add(0, 1, getAdapterPosition(), Common.DELETE);
     }
 
-    @Override
-    public boolean onLongClick(View v) {
-        itemClickListener.onClick(v, getAdapterPosition(), true);
-        return true;
-    }
 }

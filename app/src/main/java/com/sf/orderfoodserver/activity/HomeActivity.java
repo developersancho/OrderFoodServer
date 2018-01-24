@@ -34,6 +34,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -44,7 +45,7 @@ import com.sf.orderfoodserver.common.Common;
 import com.sf.orderfoodserver.helper.ItemClickListener;
 import com.sf.orderfoodserver.helper.MenuViewHolder;
 import com.sf.orderfoodserver.model.Category;
-import com.sf.orderfoodserver.service.ListenOrderService;
+import com.sf.orderfoodserver.model.firebase.Token;
 import com.squareup.picasso.Picasso;
 
 import java.util.UUID;
@@ -111,9 +112,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         recycler_menu.setLayoutManager(layoutManager);
         loadMenu();
 
-        // register service
-        Intent service = new Intent(HomeActivity.this, ListenOrderService.class);
-        startService(service);
+        updateToken(FirebaseInstanceId.getInstance().getToken());
+    }
+
+    private void updateToken(String myToken) {
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference tokens = db.getReference("FoodTokens");
+        Token data = new Token(myToken, true);
+        tokens.child(Common.currentUser.getPhone()).setValue(data);
     }
 
     private void showDialog() {

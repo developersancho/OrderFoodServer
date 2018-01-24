@@ -8,6 +8,8 @@ import android.graphics.Paint;
 
 import com.sf.orderfoodserver.model.Request;
 import com.sf.orderfoodserver.model.User;
+import com.sf.orderfoodserver.remote.APIService;
+import com.sf.orderfoodserver.remote.FCMRetrofitClient;
 import com.sf.orderfoodserver.remote.IGeoCoordinates;
 import com.sf.orderfoodserver.remote.RetrofitClient;
 
@@ -19,6 +21,7 @@ public class Common {
     public static User currentUser;
     public static Request currentRequest;
 
+    private static final String fcmURL = "https://fcm.googleapis.com/";
     public static final String UPDATE = "Update";
     public static final String DELETE = "Delete";
     public static final int PICK_IMAGE_REQUEST = 71;
@@ -27,6 +30,10 @@ public class Common {
 
     public static IGeoCoordinates getGeoCodeServices() {
         return RetrofitClient.getClient(baseUrl).create(IGeoCoordinates.class);
+    }
+
+    public static APIService getFCMService() {
+        return FCMRetrofitClient.getClient(fcmURL).create(APIService.class);
     }
 
     public static Bitmap scaleBitmap(Bitmap bitmap, int newWidth, int newHeight) {

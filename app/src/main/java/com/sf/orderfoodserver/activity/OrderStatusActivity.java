@@ -7,20 +7,34 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.sf.orderfoodserver.R;
 import com.sf.orderfoodserver.common.Common;
 import com.sf.orderfoodserver.helper.ItemClickListener;
 import com.sf.orderfoodserver.helper.OrderViewHolder;
 import com.sf.orderfoodserver.model.Request;
+import com.sf.orderfoodserver.model.firebase.MyResponse;
+import com.sf.orderfoodserver.model.firebase.Notification;
+import com.sf.orderfoodserver.model.firebase.Sender;
+import com.sf.orderfoodserver.model.firebase.Token;
+import com.sf.orderfoodserver.remote.APIService;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class OrderStatusActivity extends AppCompatActivity {
 
@@ -34,11 +48,14 @@ public class OrderStatusActivity extends AppCompatActivity {
 
     MaterialSpinner spinner;
 
+    APIService mService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_status);
 
+        mService = Common.getFCMService();
         db = FirebaseDatabase.getInstance();
         requests = db.getReference("Requests");
 
@@ -74,12 +91,14 @@ public class OrderStatusActivity extends AppCompatActivity {
                             Intent trackingOrder = new Intent(OrderStatusActivity.this, TrackingOrderActivity.class);
                             Common.currentRequest = model;
                             startActivity(trackingOrder);
-                        } else {
+                        }
+
+                        /*else {
                             Intent orderDetail = new Intent(OrderStatusActivity.this, OrderDetailActivity.class);
                             Common.currentRequest = model;
                             orderDetail.putExtra("OrderId", adapter.getRef(position).getKey());
                             startActivity(orderDetail);
-                        }
+                        }*/
                     }
                 });
             }
@@ -124,6 +143,8 @@ public class OrderStatusActivity extends AppCompatActivity {
                 dialog.dismiss();
                 item.setStatus(String.valueOf(spinner.getSelectedIndex()));
                 requests.child(localKey).setValue(item);
+
+                sendOrderStatusToUser(localKey, item);
             }
         });
 
@@ -136,6 +157,44 @@ public class OrderStatusActivity extends AppCompatActivity {
 
         alertDialog.show();
 
+    }
+
+    private void sendOrderStatusToUser(final String key, Request item) {
+        DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("FoodTokens");
+        Query data = tokens.orderByKey().equalTo(item.getPhone());
+        data.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+                    Token serverToken = postSnapShot.getValue(Token.class);
+
+                    Notification notification = new Notification("INFORMATION", "Your order " + key+" was updated");
+                    Sender content = new Sender(serverToken.getToken(), notification);
+
+                    mService.sendNotification(content)
+                            .enqueue(new Callback<MyResponse>() {
+                                @Override
+                                public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
+                                    if (response.body().getSuccess() == 1) {
+                                        Toast.makeText(OrderStatusActivity.this, "Order was updated", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(OrderStatusActivity.this, "Order was updated but failed to send notification !!!", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<MyResponse> call, Throwable t) {
+                                    Log.d("ERROR", t.getMessage());
+                                }
+                            });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
