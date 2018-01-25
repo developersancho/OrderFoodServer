@@ -76,51 +76,55 @@ public class OrderStatusActivity extends AppCompatActivity {
                 requests) {
 
             @Override
-            protected void populateViewHolder(OrderViewHolder viewHolder, final Request model, int position) {
+            protected void populateViewHolder(OrderViewHolder viewHolder, final Request model, final int position) {
                 viewHolder.order_id.setText(adapter.getRef(position).getKey());
                 viewHolder.order_status.setText(Common.convertCodeToStatus(model.getStatus()));
                 viewHolder.order_phone.setText(model.getPhone());
                 viewHolder.order_address.setText(model.getAddress());
 
-                final Request clickItem = model;
-                viewHolder.setItemClickListener(new ItemClickListener() {
+                // new event buttons
+                viewHolder.btnEdit.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(View view, int position, boolean isLongClick) {
-                        if (!isLongClick) {
-                            //Toast.makeText(OrderStatusActivity.this, "" + clickItem.getName() + "-" + clickItem.getPhone(), Toast.LENGTH_SHORT).show();
-                            Intent trackingOrder = new Intent(OrderStatusActivity.this, TrackingOrderActivity.class);
-                            Common.currentRequest = model;
-                            startActivity(trackingOrder);
-                        }
-
-                        /*else {
-                            Intent orderDetail = new Intent(OrderStatusActivity.this, OrderDetailActivity.class);
-                            Common.currentRequest = model;
-                            orderDetail.putExtra("OrderId", adapter.getRef(position).getKey());
-                            startActivity(orderDetail);
-                        }*/
+                    public void onClick(View v) {
+                        showUpdateDialog(adapter.getRef(position).getKey(), adapter.getItem(position));
                     }
                 });
+
+                viewHolder.btnRemove.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        deleteOrder(adapter.getRef(position).getKey());
+                    }
+                });
+
+                viewHolder.btnDetail.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent orderDetail = new Intent(OrderStatusActivity.this, OrderDetailActivity.class);
+                        Common.currentRequest = model;
+                        orderDetail.putExtra("OrderId", adapter.getRef(position).getKey());
+                        startActivity(orderDetail);
+                    }
+                });
+
+                viewHolder.btnDirection.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent trackingOrder = new Intent(OrderStatusActivity.this, TrackingOrderActivity.class);
+                        Common.currentRequest = model;
+                        startActivity(trackingOrder);
+                    }
+                });
+
             }
         };
         adapter.notifyDataSetChanged();
         recyclerView.setAdapter(adapter);
     }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-
-        if (item.getTitle().equals(Common.UPDATE)) {
-            showUpdateDialog(adapter.getRef(item.getOrder()).getKey(), adapter.getItem(item.getOrder()));
-        } else if (item.getTitle().equals(Common.DELETE)) {
-            deleteOrder(adapter.getRef(item.getOrder()).getKey());
-        }
-
-        return super.onContextItemSelected(item);
-    }
-
     private void deleteOrder(String key) {
         requests.child(key).removeValue();
+        adapter.notifyDataSetChanged();
     }
 
     private void showUpdateDialog(String key, final Request item) {
@@ -143,7 +147,7 @@ public class OrderStatusActivity extends AppCompatActivity {
                 dialog.dismiss();
                 item.setStatus(String.valueOf(spinner.getSelectedIndex()));
                 requests.child(localKey).setValue(item);
-
+                adapter.notifyDataSetChanged(); // update item size
                 sendOrderStatusToUser(localKey, item);
             }
         });
@@ -168,7 +172,7 @@ public class OrderStatusActivity extends AppCompatActivity {
                 for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
                     Token serverToken = postSnapShot.getValue(Token.class);
 
-                    Notification notification = new Notification("INFORMATION", "Your order " + key+" was updated");
+                    Notification notification = new Notification("INFORMATION", "Your order " + key + " was updated");
                     Sender content = new Sender(serverToken.getToken(), notification);
 
                     mService.sendNotification(content)
