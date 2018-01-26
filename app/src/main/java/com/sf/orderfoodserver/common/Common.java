@@ -20,6 +20,7 @@ import com.sf.orderfoodserver.remote.RetrofitClient;
 public class Common {
     public static User currentUser;
     public static Request currentRequest;
+    public  static String PHONE_TEXT = "userPhone";
 
     private static final String fcmURL = "https://fcm.googleapis.com/";
     public static final String UPDATE = "Update";
